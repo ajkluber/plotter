@@ -101,8 +101,8 @@ if __name__ == "__main__":
 
     plt.figure()
     if args.all:
-        temps = [ x.rstrip("\n") for x in open("long_temps","r").readlines() ]
         # Sort temperatures
+        temps = [ x.rstrip("\n") for x in open("long_temps","r").readlines() ]
         uniq_Tlist = []
         Qlist = []
         Tlist = []
