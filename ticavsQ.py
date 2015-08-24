@@ -72,8 +72,47 @@ def misc():
     cbar = plt.colorbar()
     cbar.ax.set_ylabel('Free energy')
 
+def plot_tica_eigenvalues(s,lagtau,saveas=True):
+    first_neg = np.where(s < 0)[0][0]
+    imp_timescales = -lagtau/np.log(s[:first_neg])
 
-def plot_2Dpmf(X,Y,xlabel,ylabel,title,saveas,bins=(100,100),no_display=False):
+    # Plot eigenvalues
+    plt.figure()
+    plt.plot(s,'g.')
+    plt.axvline(x=first_neg,color='k')
+    plt.title("First negative %d" % first_neg,fontsize=16)
+    plt.xlabel("Eigenvalue index",fontsize=16)
+    plt.ylabel("Eigenvalue",fontsize=16)
+    if saveas:
+        plt.savefig("eigenvalues.png",bbox_inches="tight")
+        plt.savefig("eigenvalues.pdf",bbox_inches="tight")
+        plt.savefig("eigenvalues.eps",bbox_inches="tight")
+
+    # Implied timescales
+    plt.figure()
+    plt.plot(imp_timescales,'g.')
+    plt.title("Implied timescales")
+    plt.xlabel("Eigenvalue index $i$",fontsize=16)
+    plt.ylabel("Implied timescale  $t_i$ (frames)",fontsize=16)
+    if saveas:
+        plt.savefig("implied_timescales.png",bbox_inches="tight")
+        plt.savefig("implied_timescales.pdf",bbox_inches="tight")
+        plt.savefig("implied_timescales.eps",bbox_inches="tight")
+    
+    # Ratio of subsequent timescales
+    plt.figure()
+    plt.plot(imp_timescales[:-1]/imp_timescales[1:],'g.')
+    plt.title("Ratio of subsequent implied timescales",fontsize=16)
+    plt.xlabel("Eigenvalue index $i$",fontsize=16)
+    plt.ylabel("Implied timescale $t_i/t_{i+1}$",fontsize=16)
+    if saveas:
+        plt.savefig("ratio_implied_timescales.png",bbox_inches="tight")
+        plt.savefig("ratio_implied_timescales.pdf",bbox_inches="tight")
+        plt.savefig("ratio_implied_timescales.eps",bbox_inches="tight")
+    plt.show()
+
+
+def plot_2Dpmf(X,Y,xlabel,ylabel,title,saveas,bins=(100,100)):
     cubecmap.set_bad(color="lightgray",alpha=1.)
     plt.figure()
     z,x,y = np.histogram2d(X,Y,bins=bins)
@@ -91,10 +130,8 @@ def plot_2Dpmf(X,Y,xlabel,ylabel,title,saveas,bins=(100,100),no_display=False):
         plt.savefig(saveas+".png",bbox_inches="tight")
         plt.savefig(saveas+".pdf",bbox_inches="tight")
         plt.savefig(saveas+".eps",bbox_inches="tight")
-    #if not no_display:
-    #    plt.show()
 
-def plot_1Dpmf(X,xlabel,title,saveas,nbins=100,no_display=False):
+def plot_1Dpmf(X,xlabel,title,saveas,nbins=100):
     n,bins = np.histogram(X,bins=nbins)
     pmf = -np.log(n)
     pmf -= pmf.min()
@@ -153,7 +190,6 @@ def plot_weights(C,coordname,title,saveas,shift):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='.')
-    #parser.add_argument('--coordfile', type=str, required=True, help='Coordfile to compare with.')
     parser.add_argument('--temps', type=str, required=True, help='File with temps to use.')
     parser.add_argument('--feature', type=str, required=True, help='all_contacts or native_contacts.')
     parser.add_argument('--lag', type=int, required=True, help='Lag for TICA.')
@@ -212,9 +248,14 @@ if __name__ == "__main__":
         for i in range(psi2_w.shape[0]):
             Cpsi2[int(psi2_w[i,1]),int(psi2_w[i,0])] = psi2_w[i,2]
 
+    tica_eigenvalues = np.loadtxt("eigenvalues.dat")
+
     if not os.path.exists("plots"):
         os.mkdir("plots")
     os.chdir("plots")
+
+    # Plot tica eigenvalues and implied timescales.
+    plot_tica_eigenvalues(tica_eigenvalues,lag)
 
     # Plot 1D 
     plot_1Dpmf(coord,"Native contacts $Q$","Native contacts","Qpmf")
