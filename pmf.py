@@ -11,16 +11,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     filename = args.data 
-    coord = filename.split(".")[0]
+    coord_name = filename.split(".")[0]
 
-    Q = np.loadtxt(filename)
-    n,bins = np.histogram(Q,bins=args.n_bins)
+    coord = np.loadtxt(filename)
+
+    n,bins = np.histogram(coord,bins=args.n_bins)
     F = -np.log(n)
     F -= min(F)
     x = 0.5*(bins[1:] + bins[:-1])
     plt.plot(x,F,'b',lw=2)
-    plt.xlabel("%s" % coord,fontsize=20)
-    plt.ylabel("F(%s) (k$_B$T)" % coord,fontsize=20)
+    plt.xlabel(coord_label,fontsize=16)
+    plt.ylabel("F(%s) (k$_B$T)" % coord_label,fontsize=16)
     plt.title(args.title)
     if args.saveas != "None":
         plt.savefig(args.saveas)
