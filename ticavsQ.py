@@ -73,14 +73,18 @@ def misc():
     cbar.ax.set_ylabel('Free energy')
 
 def plot_tica_eigenvalues(s,lagtau,saveas=True):
-    first_neg = np.where(s < 0)[0][0]
-    imp_timescales = -lagtau/np.log(s[:first_neg])
+    if sum(s < 0) > 0:
+        first_neg = np.where(s < 0)[0][0]
+        imp_timescales = -lagtau/np.log(s[:first_neg])
+    else:
+        imp_timescales = -lagtau/np.log(s)
 
     # Plot eigenvalues
     plt.figure()
     plt.plot(s,'g.')
-    plt.axvline(x=first_neg,color='k')
-    plt.title("First negative %d" % first_neg,fontsize=16)
+    if sum(s < 0) > 0:
+        plt.axvline(x=first_neg,color='k')
+    plt.title("TICA eigenvalues",fontsize=16)
     plt.xlabel("Eigenvalue index",fontsize=16)
     plt.ylabel("Eigenvalue",fontsize=16)
     if saveas:
