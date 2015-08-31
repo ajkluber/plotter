@@ -12,11 +12,38 @@ def calculate_state_bounds(x,F,verbose=False):
     """
 
     xinterp = np.linspace(x.min(),x.max(),500)
-    F_fit = np.poly1d(np.polyfit(x,F,9))
+    F_fit = np.poly1d(np.polyfit(x,F,20))
     dFdx = np.polyder(F_fit,m=1)
+    
     A = dFdx(xinterp)
-    minidx = np.where([(A[i] < 0) & (A[i + 1] > 0) for i in range(len(A) - 1) ])[0]
-    maxidx = np.where([(A[i] > 0) & (A[i + 1] < 0) for i in range(len(A) - 1) ])[0]
+    minidx = np.where((A[:-1] < 0) & (A[1:] > 0))[0]
+    maxidx = np.where((A[:-1] > 0) & (A[1:] < 0))[0]
+    temp = []
+    for i in range(len(maxidx)):
+        if (A.shape[0] - maxidx[i]) < 5:
+            pass
+        else:
+            temp.append(temp)
+    maxidx = np.array(temp)
+    # account for multiple max and minima.
+    state_labels = []
+    counter = 1
+    for i in range(minidx.shape[0]):
+        if i == 0:
+            state_labels.append("U")
+        elif i == minidx.shape[0]:
+            state_labels.append("N")
+        else:
+            state_labels.append("I%d" % counter)
+            counter += 1
+    counter = 1
+    for i in range(maxidx.shape[0]):
+        state_labels.append("TS%d" % counter)
+        counter += 1
+    dF_barriers = [ F_fit(xinterp[maxidx[i]]) - F_fit(xinterp[minidx[0]]) for i in range(maxidx.shape[0]) ]
+    dF_minima = [ F_fit(xinterp[minidx[i]]) - F_fit(xinterp[minidx[0]]) for i in range(1,minidx.shape[0]) ]
+
+
     dF_minima = F_fit(xinterp[minidx[1]]) - F_fit(xinterp[minidx[0]])
     dF_barrier = F_fit(xinterp[maxidx[0]]) - F_fit(xinterp[minidx[0]])
     if len(minidx) != 2:

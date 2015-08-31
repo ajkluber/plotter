@@ -42,4 +42,45 @@ def from_profile(bins,Fdata,npoly=17):
     omegamin = d2Fdx2(minxval)
     omegamax = d2Fdx2(maxxval)
 
-    return xinterp, F, minxval, maxxval
+    return xinterp, F, minxval, maxxval, omegamin, omegamax
+
+def state_bounds(x,F,minxval,maxxval):
+
+    minidx = np.array([ np.where(x == minxval[i])[0][0] for i in range(minxval.shape[0]) ])
+    maxidx = np.array([ np.where(x == maxxval[i])[0][0] for i in range(maxxval.shape[0]) ])
+
+    min_state_bounds = []
+    for i in range(minxval.shape[0]):
+        left_min_bound = x.min()
+        right_min_bound = x.max()
+        for j in range(x[:minidx[i]].shape[0]):
+            deltaF = F_fit(x[minidx[i] - j]) - F_fit(x[minidx[i]])
+            if deltaF >= 0.3:
+                left_min_bound = x[minidx[i] - j]
+                break
+        for j in range(x[minidx[i]:].shape[0]):
+            deltaF = F_fit(x[minidx[i] + j]) - F_fit(x[minidx[i]])
+            if deltaF >= 0.3:
+                right_min_bound = x[minidx[i] + j]
+                break
+        min_state_bounds.append([left_min_bound,right_min_bound])
+
+    max_state_bounds = []
+    for i in range(minxval.shape[0]):
+        left_min_bound = x.min()
+        right_min_bound = x.max()
+        for j in range(x[:maxidx[i]].shape[0]):
+            deltaF = abs(F_fit(x[maxidx[i] - j]) - F_fit(x[maxidx[i]]))
+            if deltaF >= 0.3:
+                left_min_bound = x[maxidx[i] - j]
+                break
+        for j in range(x[maxidx[i]:].shape[0]):
+            deltaF = abs(F_fit(x[maxidx[i] + j]) - F_fit(x[maxidx[i]]))
+            if deltaF >= 0.3:
+                right_min_bound = x[maxidx[i] + j]
+                break
+        max_state_bounds.append([left_min_bound,right_min_bound])
+
+    return min_state_bounds, max_state_bounds
+
+
