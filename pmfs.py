@@ -1,13 +1,14 @@
 import os
 import argparse
 import shutil
+import logging
 import numpy as np
 
 import pmfutil
 
 def save_Tf(abs_dFmin,uniq_Tlist,Tlist):
     """Save estimated folding temperature based on differen"""
-    Tfidx = abs_dFmin_all.index(min(abs_dFmin))
+    Tfidx = abs_dFmin.index(min(abs_dFmin))
     if abs_dFmin[Tfidx] > 2.0:
         print "difference in free energy is pretty large"
     Tf = uniq_Tlist[Tfidx]
@@ -70,8 +71,11 @@ if __name__ == "__main__":
     saveas = args.saveas
     nodisplay = args.nodisplay
 
+    if not os.path.exists("%s_profile" % coord_name):
+        os.mkdir("%s_profile" % coord_name)
+
     # Get timeseries
-    uniq_Tlist, Tlist, coordlist = get_timeseries_by_temperature(temps_file)
+    uniq_Tlist, Tlist, coordlist = get_timeseries_by_temperature(temps_file,coord_file)
 
     colors = ['b','r','g','k','cyan','magenta','salmon','darkgreen','gray']
     if nodisplay:
@@ -79,12 +83,10 @@ if __name__ == "__main__":
         matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    if not path.exists("%s_profile" % coord_name):
-        os.mkdir("%s_profile" % coord_name)
     os.chdir("%s_profile" % coord_name)
 
     plt.figure()
-    dFmin_all = []
+    abs_dFmin = []
     for i in range(len(coordlist)):
         T = uniq_Tlist[i]
         coordvst = coordlist[i]
@@ -96,19 +98,18 @@ if __name__ == "__main__":
         min_labels, max_labels = pmfutil.assign_state_labels(min_bounds,max_bounds)
         pmfutil.save_state_bounds(T,min_bounds,max_bounds,min_labels,max_labels)
 
-        barriers = [ F(xinterp[maxidx[i]]) - F(xinterp[minidx[0]]) for n in range(len(maxidx)) ]
-        max_barr = max(barriers) 
-        max_barr_idx = barriers.index(max_barr)
-
         dF_N_U = F(xinterp[minidx[-1]]) - F(xinterp[minidx[0]]) 
-        dF_TS_U = F(xinterp[minidx[max_barr_idx]]) - F(xinterp[minidx[0]]) 
-
         abs_dFmin.append(abs(dF_N_U))
-        dFbarr_all.append(dF_TS_U)
+
+        # Determine highest barrier
+        #barriers = [ F(xinterp[maxidx[i]]) - F(xinterp[minidx[0]]) for n in range(len(maxidx)) ]
+        #max_barr = max(barriers) 
+        #max_barr_idx = barriers.index(max_barr)
+        #dF_TS_U = F(xinterp[minidx[max_barr_idx]]) - F(xinterp[minidx[0]]) 
 
         # Plot profile from data and interpolant 
-        plt.plot(xinterp,F_fit(xinterp),lw=2,color=colors[i])
-        plt.plot(mid_bin,F,marker='o',color=colors[i],label=T)
+        plt.plot(xinterp,F(xinterp),lw=2,color=colors[i])
+        plt.plot(mid_bin,Fdata,'o',color=colors[i],label=T)
 
     save_Tf(abs_dFmin,uniq_Tlist,Tlist)
 

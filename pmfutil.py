@@ -42,34 +42,35 @@ def state_bounds_from_profile(xinterp,F,threshold=0.3):
     """Find boundaries of each extrema state along 1D profile"""
 
     minidx, maxidx = extrema_from_profile(xinterp,F)
-
+    # Determine state bounds for minima
     min_state_bounds = []
-    for i in range(minxval.shape[0]):
+    for i in range(minidx.shape[0]):
         left_min_bound = xinterp.min()
         right_min_bound = xinterp.max()
         for j in range(xinterp[:minidx[i]].shape[0]):
-            deltaF = F_fit(xinterp[minidx[i] - j]) - F_fit(xinterp[minidx[i]])
+            deltaF = F(xinterp[minidx[i] - j]) - F(xinterp[minidx[i]])
             if deltaF >= threshold:
-                left_min_bound = x[minidx[i] - j]
+                left_min_bound = xinterp[minidx[i] - j]
                 break
         for j in range(xinterp[minidx[i]:].shape[0]):
-            deltaF = F_fit(xinterp[minidx[i] + j]) - F_fit(xinterp[minidx[i]])
+            deltaF = F(xinterp[minidx[i] + j]) - F(xinterp[minidx[i]])
             if deltaF >= threshold:
                 right_min_bound = xinterp[minidx[i] + j]
                 break
         min_state_bounds.append([left_min_bound,right_min_bound])
 
+    # Determine state bounds for maxima
     max_state_bounds = []
-    for i in range(minxval.shape[0]):
+    for i in range(maxidx.shape[0]):
         left_min_bound = xinterp.min()
         right_min_bound = xinterp.max()
         for j in range(xinterp[:maxidx[i]].shape[0]):
-            deltaF = abs(F_fit(xinterp[maxidx[i] - j]) - F_fit(xinterp[maxidx[i]]))
+            deltaF = abs(F(xinterp[maxidx[i] - j]) - F(xinterp[maxidx[i]]))
             if deltaF >= threshold:
                 left_min_bound = xinterp[maxidx[i] - j]
                 break
         for j in range(xinterp[maxidx[i]:].shape[0]):
-            deltaF = abs(F_fit(xinterp[maxidx[i] + j]) - F_fit(xinterp[maxidx[i]]))
+            deltaF = abs(F(xinterp[maxidx[i] + j]) - F(xinterp[maxidx[i]]))
             if deltaF >= threshold:
                 right_min_bound = xinterp[maxidx[i] + j]
                 break
