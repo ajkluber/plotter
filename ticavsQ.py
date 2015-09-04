@@ -204,7 +204,6 @@ if __name__ == "__main__":
     parser.add_argument('--temps', type=str, required=True, help='File with temps to use.')
     parser.add_argument('--feature', type=str, required=True, help='all_contacts or native_contacts.')
     parser.add_argument('--lag', type=int, required=True, help='Lag for TICA.')
-    parser.add_argument('--stride', type=int, required=True, help='Name of directory.')
     parser.add_argument('--n_bins', type=int, default=100, help='Name of directory.')
     parser.add_argument('--no_display', action='store_true', help="Don't show plots.")
     args = parser.parse_args()
@@ -213,7 +212,6 @@ if __name__ == "__main__":
     n_bins = args.n_bins
     feature = args.feature
     lag = args.lag
-    stride = args.stride
     no_display = args.no_display
 
     dirs = [ x.rstrip("\n") for x in  open(temps,"r").readlines() ]
@@ -229,9 +227,9 @@ if __name__ == "__main__":
         prefix = "nat"
 
     # Get tica coordinates  
-    psi1 = np.concatenate([ np.loadtxt("%s/tica1_%s_%d_%d.dat" % (x,prefix,lag,stride)) for x in dirs ])
-    if os.path.exists("%s/tica2_%s_%d_%d.dat" % (dirs[0],prefix,lag,stride)):
-        psi2 = np.concatenate([ np.loadtxt("%s/tica2_%s_%d_%d.dat" % (x,prefix,lag,stride)) for x in dirs ])
+    psi1 = np.concatenate([ np.loadtxt("%s/tica1_%s_%d.dat" % (x,prefix,lag)) for x in dirs ])
+    if os.path.exists("%s/tica2_%s_%d.dat" % (dirs[0],prefix,lag)):
+        psi2 = np.concatenate([ np.loadtxt("%s/tica2_%s_%d.dat" % (x,prefix,lag)) for x in dirs ])
     else:
         psi2 = None
     coord = np.concatenate([ np.loadtxt("%s/Q.dat" % x) + np.random.rand(file_len("%s/Q.dat" % x)) for x in dirs ])
@@ -239,10 +237,10 @@ if __name__ == "__main__":
     if corr == -1:
         psi1 *= -1
         
-    os.chdir("tica_%s_%d_%d" % (prefix,lag,stride))
+    os.chdir("tica_%s_%d" % (prefix,lag))
 
     # Get tica weights
-    psi1_w = np.loadtxt("tica1_%s_%d_%d_weights.dat" % (prefix,lag,stride))
+    psi1_w = np.loadtxt("tica1_weights.dat")
     if corr == -1:
         psi1_w[:,2] *= -1
     Cpsi1 = np.zeros((n_residues,n_residues))*np.nan
@@ -250,7 +248,7 @@ if __name__ == "__main__":
         Cpsi1[abs(int(psi1_w[i,1])),abs(int(psi1_w[i,0]))] = psi1_w[i,2]
 
     if psi2 is not None:
-        psi2_w = np.loadtxt("tica2_%s_%d_%d_weights.dat" % (prefix,lag,stride))
+        psi2_w = np.loadtxt("tica2_weights.dat")
         Cpsi2 = np.zeros((n_residues,n_residues))*np.nan
         for i in range(psi2_w.shape[0]):
             Cpsi2[int(psi2_w[i,1]),int(psi2_w[i,0])] = psi2_w[i,2]
