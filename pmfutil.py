@@ -1,5 +1,20 @@
 import numpy as np
 
+def plotpmf1D(xvst,xlabel="",ylabel="Free energy (k$_B$T)",bins=50,saveas=None,display=True):
+    """Plot 1D pmf"""
+    if nodisplay:
+        import matplotlib
+        matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    mid_bin,Fdata = pmf1D(xvst,bins=bins) 
+    plt.plot(mid_bin,Fdata,lw=2)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    if saveas is not None:
+        plt.savefig(saveas) 
+    if display:
+        plt.show()
+
 def pmf1D(xvst,bins=50):
     """Histogram timeseries to get 1D pmf"""
     n,bins = np.histogram(xvst,bins=bins)
@@ -84,6 +99,7 @@ def assign_state_labels(min_bounds,max_bounds):
     leftbounds = [ min_bounds[i][0] for i in range(len(min_bounds)) ]
     mina = min(leftbounds)
     maxa = max(leftbounds)
+    counter = 1
     for i in range(len(min_bounds)): 
         a = min_bounds[i][0]
         b = min_bounds[i][1]
