@@ -8,6 +8,7 @@ if __name__ == "__main__":
     parser.add_argument('--title', type=str, default="", help='Optional. Title for plot.')
     parser.add_argument('--stride', type=int, default=1, help='Optional. Stride to subsample frames.')
     parser.add_argument('--saveas', type=str, default=None, help='Optional. Filename to save plot.')
+    parser.add_argument('--nodisplay', action='store_true', help='Optional. Dont display to screen.')
     args = parser.parse_args()
 
     filename = args.data 
@@ -21,4 +22,6 @@ if __name__ == "__main__":
     plt.title(args.title)
     if args.saveas is not None:
         plt.savefig(args.saveas)
-    plt.show()
+
+    if (not args.nodisplay) or (args.nodisplay is None):
+        plt.show()
