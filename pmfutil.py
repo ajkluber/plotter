@@ -2,7 +2,7 @@ import numpy as np
 
 def plotpmf1D(xvst,xlabel="",ylabel="Free energy (k$_B$T)",bins=50,saveas=None,display=True):
     """Plot 1D pmf"""
-    if nodisplay:
+    if not display:
         import matplotlib
         matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -15,6 +15,23 @@ def plotpmf1D(xvst,xlabel="",ylabel="Free energy (k$_B$T)",bins=50,saveas=None,d
     if display:
         plt.show()
 
+def plotpmf2D(xvst,yvst,xlabel="",ylabel="",bins=50,saveas=None,display=True):
+    """Plot 1D pmf"""
+    if not display:
+        import matplotlib
+        matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    xedges,yedges,Fdata = pmf2D(xvst,yvst,bins=bins) 
+    plt.pcolormesh(xedges,yedges,Fdata)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    cbar = plt.colorbar()
+    cbar.set_label("Free Energy (k$_B$T)")
+    if saveas is not None:
+        plt.savefig(saveas) 
+    if display:
+        plt.show()
+
 def pmf1D(xvst,bins=50):
     """Histogram timeseries to get 1D pmf"""
     n,bins = np.histogram(xvst,bins=bins)
@@ -22,6 +39,13 @@ def pmf1D(xvst,bins=50):
     Fdata = -np.log(n)
     Fdata -= min(Fdata)
     return mid_bin,Fdata
+
+def pmf2D(xvst,yvst,bins=50):
+    """Histogram timeseries to get 1D pmf"""
+    nxy,xedges,yedges = np.histogram2d(xvst,yvst,bins=bins)
+    Fdata = -np.log(nxy)
+    Fdata -= Fdata.min()
+    return xedges,yedges,Fdata
 
 def interpolate_profile(mid_bin,Fdata,npoly=20):
     """Interpolate 1D profile with polynomial"""
