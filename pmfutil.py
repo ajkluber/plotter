@@ -1,13 +1,13 @@
 import numpy as np
 
-def plotpmf1D(xvst,xlabel="",ylabel="Free energy (k$_B$T)",bins=50,saveas=None,display=True):
+def plotpmf1D(xvst,xlabel="",ylabel="Free energy (k$_B$T)",bins=50,saveas=None,display=True,label=""):
     """Plot 1D pmf"""
     if not display:
         import matplotlib
         matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     mid_bin,Fdata = pmf1D(xvst,bins=bins) 
-    plt.plot(mid_bin,Fdata,lw=2)
+    plt.plot(mid_bin,Fdata,lw=2,label=label)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if saveas is not None:
