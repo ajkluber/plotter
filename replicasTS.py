@@ -35,7 +35,7 @@ class ContactArgs(object):
         self.topology = topology
         self.periodic = periodic
 
-def plot_replica_TS_grid(parent_dirs,sub_dirs,pairs,n_residues,coordfile,tempsfile,tempsfile_backup,save_formats=["png"]):
+def plot_replica_TS_grid(titles,parent_dirs,sub_dirs,pairs,n_residues,coordfile,tempsfile,tempsfile_backup,save_formats=["png"]):
     """ Plot grid of TS contact probabilities for replicas
 
 
@@ -84,7 +84,7 @@ def plot_replica_TS_grid(parent_dirs,sub_dirs,pairs,n_residues,coordfile,tempsfi
             os.mkdir("plots")
         os.chdir("plots")
         # Save grid figure of TS's for all replicas
-        fig1.suptitle("TS contact probability %s" % variance[i],fontsize=18)
+        fig1.suptitle("TS contact probability %s" % titles[i],fontsize=18)
         fig1.subplots_adjust(hspace=0,wspace=0)
         for format in save_formats:
             fig1.savefig("all_rep_TS.%s" % format,bbox_inches="tight")
@@ -187,5 +187,5 @@ if __name__ == "__main__":
     parent_dirs = [ "random_native_%s" % variance[i] for i in range(len(variance)) ]
     sub_dirs = [ "replica_%d/%s/iteration_0" % (i,name) for i in range(1,11) ] 
 
-    plot_replica_TS_grid(parent_dirs,sub_dirs,pairs,n_residues,coordfile,tempsfile,tempsfile_backup)
+    plot_replica_TS_grid(variance,parent_dirs,sub_dirs,pairs,n_residues,coordfile,tempsfile,tempsfile_backup)
 
