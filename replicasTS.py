@@ -35,7 +35,7 @@ class ContactArgs(object):
         self.topology = topology
         self.periodic = periodic
 
-def plot_replica_TS_grid(titles,parent_dirs,sub_dirs,pairs,n_residues,coordfile,tempsfile,tempsfile_backup,save_formats=["png"]):
+def plot_replica_TS_grid(titles,parent_dirs,sub_dirs,pairs,n_residues,coordfile,tempsfile,tempsfile_backup,savelocal=True,save_formats=["png"]):
     """ Plot grid of TS contact probabilities for replicas
 
 
@@ -64,7 +64,11 @@ def plot_replica_TS_grid(titles,parent_dirs,sub_dirs,pairs,n_residues,coordfile,
             ax = axes[i_idx,j_idx]
 
             ax.text(n_residues*0.4,n_residues*0.1,"replica %d" % (rep_idx + 1),fontsize=10)
-            TS = plot_single_replica_TS(coordfile,tempsfile,tempsfile_backup,savepath=None)
+            if savelocal:
+                savepath = os.getcwd()
+            else:
+                savepath = None
+            TS = plot_single_replica_TS(coordfile,tempsfile,tempsfile_backup,savepath=savepath)
 
             if TS is not None: 
                 C = np.zeros((n_residues,n_residues))
