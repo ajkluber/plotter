@@ -148,6 +148,8 @@ def calculate_TS_probabilities(Tdirs,coordfile,contact_args):
         # Determine state bounds from 1D profile
         print "calculating state bounds"
         coordvst = np.concatenate([np.loadtxt("%s/%s" % (x,coordfile)) for x in Tdirs ])
+        if not os.path.exists("%s_profile" % coordname):
+            os.mkdir("%s_profile" % coordname)
         os.chdir("%s_profile" % coordname)
         mid_bin, Fdata = pmfutil.pmf1D(coordvst,bins=40)
         xinterp, F = pmfutil.interpolate_profile(mid_bin,Fdata)
