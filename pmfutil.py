@@ -47,11 +47,19 @@ def pmf2D(xvst,yvst,bins=50):
     Fdata -= Fdata.min()
     return xedges,yedges,Fdata
 
-def interpolate_profile(mid_bin,Fdata,npoly=20):
+def interpolate_profile(mid_bin,Fdata,npoly=20,ninterp=500):
     """Interpolate 1D profile with polynomial"""
-    xinterp = np.linspace(mid_bin.min(),mid_bin.max(),500)
+    xinterp = np.linspace(mid_bin.min(),mid_bin.max(),ninterp)
     F = np.poly1d(np.polyfit(mid_bin,Fdata,npoly))
     return xinterp, F
+
+def interpolate_profiles(mid_bin,Fdatas,npoly=20,ninterp=500):
+    """Interpolate 1D profile with polynomial"""
+    xinterp = np.linspace(mid_bin.min(),mid_bin.max(),ninterp)
+    Fs = []
+    for i in range(Fdatas.shape[1]):
+        Fs.append(np.poly1d(np.polyfit(mid_bin,Fdatas[:,i],npoly)))
+    return xinterp, Fs
 
 def extrema_from_profile(xinterp,F):
     """Find extrema of a 1D free energy profile"""
