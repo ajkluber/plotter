@@ -64,7 +64,7 @@ def plot_replica_TS_grid(titles,parent_dirs,sub_dirs,pairs,n_residues,coordfile,
             ax = axes[i_idx,j_idx]
 
             ax.text(n_residues*0.4,n_residues*0.1,"replica %d" % (rep_idx + 1),fontsize=10)
-            TS = plot_single_replica_TS(coordfile,tempsfile,tempsfile_backup)
+            TS = plot_single_replica_TS(coordfile,tempsfile,tempsfile_backup,savepath=None)
 
             if TS is not None: 
                 C = np.zeros((n_residues,n_residues))
@@ -93,7 +93,7 @@ def plot_replica_TS_grid(titles,parent_dirs,sub_dirs,pairs,n_residues,coordfile,
         os.chdir("..")
         os.chdir(top_cwd)
 
-def plot_single_replica_TS(coordfile,tempsfile,tempsfile_backup):
+def plot_single_replica_TS(coordfile,tempsfile,tempsfile_backup,savepath=None):
     """ Plot single replica TS contact probabilities
     
     
@@ -122,6 +122,7 @@ def plot_single_replica_TS(coordfile,tempsfile,tempsfile_backup):
             TS = np.loadtxt("binned_contacts_vs_%s/cont_prob_TS.dat" % coordname)
         else:
             contact_args = ContactArgs("Tftrajs")
+            contact_args.savepath = savepath 
             TS = calculate_TS_probabilities(Tdirs,coordfile,contact_args)
     return TS
 
