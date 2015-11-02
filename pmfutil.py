@@ -1,4 +1,6 @@
+import os
 import numpy as np
+
 
 def plotpmf1D(xvst,xlabel="",ylabel="Free energy (k$_B$T)",bins=50,saveas=None,display=True,label=""):
     """Plot 1D pmf"""
@@ -60,6 +62,15 @@ def interpolate_profiles(mid_bin,Fdatas,npoly=20,ninterp=500):
     for i in range(Fdatas.shape[1]):
         Fs.append(np.poly1d(np.polyfit(mid_bin,Fdatas[:,i],npoly)))
     return xinterp, Fs
+
+def cubic_interpolate_profiles(mid_bins,Fdatas,ninterp=500):
+    """Interpolate 1D profile with polynomial"""
+    from scipy.interpolate import interp1d
+    Fs = []
+    for i in range(len(Fdatas)):
+        Fs.append(interp1d(mid_bins[i],Fdatas[i],kind="cubic"))
+    return Fs
+
 
 def extrema_from_profile(xinterp,F):
     """Find extrema of a 1D free energy profile"""
@@ -164,3 +175,185 @@ def save_state_bounds(coord_name,min_bounds,max_bounds,min_labels,max_labels):
             state_string = "%s  %e  %e\n" % (max_labels[i],max_bounds[i][0],max_bounds[i][1])
             fout.write(state_string)
 
+def get_free_energy_profiles(sourceroot,parent_dirs,sub_dirs,coordfile,tempsfile,saveroot=None,nbins=40):
+    """Get free energy profiles from coordinate"""
+    cwd = os.getcwd()
+    coordname = coordfile.split(".dat")[0]
+    Fprofiles = [[] for i in range(len(parent_dirs)) ]
+    Fmid_bins = [[] for i in range(len(parent_dirs)) ]
+    for i in range(len(parent_dirs)):
+        for j in range(len(sub_dirs)):
+            os.chdir("%s/%s/%s" % (sourceroot,parent_dirs[i],sub_dirs[j]))
+            if not os.path.exists("%s_profile/F.dat" % coordname):
+            #if True:
+                coordvst = np.concatenate([ np.loadtxt("%s/%s" % (x.rstrip("\n"),coordfile)) for x in open(tempsfile,"r").readlines() ])
+                mid_bin, Fvsx = pmf1D(coordvst,bins=nbins)
+                dFdx = np.array([ (Fvsx[x + 1] - Fvsx[x])/(mid_bin[x + 1] - mid_bin[x]) for x in range(len(Fvsx) - 1) ])
+                minidx = np.where([(dFdx[x] < 0) & (dFdx[x + 1] > 0) for x in range(len(dFdx) - 1) ])[0]
+                maxidx = np.where([(dFdx[x] > 0) & (dFdx[x + 1] < 0) for x in range(len(dFdx) - 1) ])[0]
+                
+                if saveroot is not None:
+                    os.chdir("%s/%s/%s" % (saveroot,parent_dirs[i],sub_dirs[j]))
+                if not os.path.exists("%s_profile" % coordname):
+                    os.mkdir("%s_profile" % coordname)
+                os.chdir("%s_profile" % coordname)
+                np.savetxt("F.dat",Fvsx)
+                np.savetxt("mid_bin.dat",mid_bin)
+                np.savetxt("maxima.dat",mid_bin[maxidx])
+                np.savetxt("minima.dat",mid_bin[minidx])
+            else:
+                Fvsx = np.loadtxt("%s_profile/F.dat" % coordname)
+                mid_bin = np.loadtxt("%s_profile/mid_bin.dat" % coordname)
+                dFdx = np.array([ (Fvsx[x + 1] - Fvsx[x])/(mid_bin[x + 1] - mid_bin[x]) for x in range(len(Fvsx) - 1) ])
+                minidx = np.where([(dFdx[x] < 0) & (dFdx[x + 1] > 0) for x in range(len(dFdx) - 1) ])[0]
+                maxidx = np.where([(dFdx[x] > 0) & (dFdx[x + 1] < 0) for x in range(len(dFdx) - 1) ])[0]
+
+                if saveroot is not None:
+                    os.chdir("%s/%s/%s" % (saveroot,parent_dirs[i],sub_dirs[j]))
+                    if not os.path.exists("%s_profile" % coordname):
+                        os.mkdir("%s_profile" % coordname)
+                    os.chdir("%s_profile" % coordname)
+                    np.savetxt("F.dat",Fvsx)
+                    np.savetxt("mid_bin.dat",mid_bin)
+                    np.savetxt("maxima.dat",mid_bin[maxidx])
+                    np.savetxt("minima.dat",mid_bin[minidx])
+
+            Fprofiles[i].append(Fvsx)
+            Fmid_bins[i].append(mid_bin)
+    os.chdir(cwd)
+    return Fmid_bins, Fprofiles
+
+def gridplot_Fvsx(myroot,parent_dirs,sub_dirs,Fmid_bins,Fprofiles,Fmax,coordname,coordsymb,name,display=True):
+    """Plot free energy profiles in grid"""
+    if not display:
+        import matplotlib
+        matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    dFdagg = [[] for i in range(len(parent_dirs)) ]
+    for i in range(len(parent_dirs)):
+        counter = 0
+        fig1,axes = plt.subplots(3,4,sharex=True,sharey=True)
+        fig2,ax2 = plt.subplots(1,1)
+        for j in range(len(sub_dirs)):
+            Fvsx = Fprofiles[i][j]
+            mid_bin = Fmid_bins[i][j]
+            ax2.plot(mid_bin,Fvsx,label="replica %d" % (j+1))
+
+            # Determine minima locations
+            dFdx = np.array([ (Fvsx[x + 1] - Fvsx[x])/(mid_bin[x + 1] - mid_bin[x]) for x in range(len(Fvsx) - 1) ])
+            minidx = np.where([(dFdx[x] < 0) & (dFdx[x + 1] > 0) for x in range(len(dFdx) - 1) ])[0] + 1
+            maxidx = np.where([(dFdx[x] > 0) & (dFdx[x + 1] < 0) for x in range(len(dFdx) - 1) ])[0] + 1
+            dFdagg[i].append(Fvsx[maxidx[0]] - Fvsx[minidx[0]])
+
+            i_idx = counter / 4
+            j_idx = counter % 4
+            ax = axes[i_idx,j_idx]
+
+            ax.plot(mid_bin,Fvsx,color="#5DA5DA")
+            ax.axvline(mid_bin[minidx[0]],ymin=0,ymax=0.2)
+            ax.axvline(mid_bin[minidx[-1]],ymin=0,ymax=0.2)
+            ax.axvline(mid_bin[maxidx[0]],ymin=0,ymax=0.2)
+            ax.set_ylim(0,Fmax)
+            
+            counter += 1
+        axes[1,0].set_ylabel("$F(%s)$ (k$_B$T)" % coordsymb.replace("$",""))
+        axes[2,1].set_xlabel(coordsymb)
+        fig1.suptitle("Free energy curves %s" % name,fontsize=18)
+        fig1.subplots_adjust(hspace=0,wspace=0)
+
+        ax2.legend()
+        ax2.set_title("Replica free energy profiles %s" % name)
+        ax2.set_xlabel(coordsymb)
+        ax2.set_ylabel("$F(%s)$ (k$_B$T)" % coordsymb.replace("$",""))
+        if not os.path.exists("plots"):
+            os.mkdir("plots")
+        fig2.savefig("plots/all_F_vs_%s.png" % coordname)
+        fig1.savefig("plots/all_F_vs_%s_grid.png" % coordname)
+
+        np.savetxt("%s/%s/%s_dFdagg.dat" % (myroot,parent_dirs[i],coordname),np.array(dFdagg[i]))
+    return dFdagg
+
+def plot_dFdagg_vs_B(dFdagg,Fmax,variance,name,coordname,display=True):
+    """Plot free energy barrier heights versus b """
+    if not display:
+        import matplotlib
+        matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    plt.figure()
+    for i in range(len(dFdagg)):
+        plt.errorbar(np.sqrt(float(variance[i])),np.mean(dFdagg[i]),yerr=np.std(dFdagg[i]),color="#5DA5DA")
+        plt.plot(np.sqrt(float(variance[i])),np.mean(dFdagg[i]),marker='o',color="#5DA5DA")
+    plt.ylabel("Folding free energy barrier (k$_B$T)")
+    plt.xlabel("Frustration $b$")
+    plt.title("Barrier Heights %s" % name)
+    plt.ylim(0,Fmax)
+    plt.savefig("plots/%s_dFdagg_vs_b.png" % coordname)
+
+def plot_Fvsx_variance_gridplot(myroot,parent_dirs,sub_dirs,variance,Fprofiles,Fmid_bins,coloridx,name,coordname,display=True):
+    """Gridplot free energy profiles with average profile in bold """
+    if not display:
+        import matplotlib
+        matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from plotter.cube_cmap import cubecmap
+    from scipy.interpolate import interp1d
+    fig1,axes = plt.subplots(3,4,sharex=True,sharey=True)
+    counter = 0
+    Finterp_all = []
+    for i in range(len(parent_dirs)):
+        Finterp_rep = []
+        xall = []
+        i_idx = counter / 4
+        j_idx = counter % 4
+        ax = axes[i_idx,j_idx]
+        for j in range(len(sub_dirs)):
+            Fvsx = Fprofiles[i][j]
+            mid_bin = Fmid_bins[i][j]
+
+            ax.plot(mid_bin,Fvsx,color=cubecmap(coloridx[i]),alpha=0.2)
+
+            Finterp = interp1d(mid_bin,Fvsx,kind="cubic")
+            Finterp_rep.append(Finterp)
+            xall.append(mid_bin)
+
+        Finterp_all.append(Finterp_rep)
+        ax.text(mid_bin.max()*0.3,3.2,"$b^2 = %s$" % variance[i])
+        qmax = min([ max(xall[x]) for x in range(len(xall)) ])
+        qmin = max([ min(xall[x]) for x in range(len(xall)) ])
+        q = np.linspace(qmin,qmax,100)
+        Favg = np.mean(np.array([ Finterp_rep[x](q) for x in range(len(Finterp_rep)) ]),axis=0)
+        #ax.plot(q,Favg,color="#5DA5DA")
+        ax.plot(q,Favg,color=cubecmap(coloridx[i]),lw=3)
+        ax.set_ylim(0,4)
+
+        counter += 1
+
+    axes[1,0].set_ylabel("Free energy F(Q) (k$_B$T)")
+    axes[2,1].set_xlabel("Folding Q")
+    fig1.suptitle("Free energy curves %s" % name,fontsize=18)
+    fig1.subplots_adjust(hspace=0,wspace=0)
+    if not os.path.exists("plots"):
+        os.mkdir("plots")
+    fig1.savefig("plots/all_b2_profiles_%s.png" % coordname)
+
+def calculate_dFdagg(myroot,parent_dirs,sub_dirs,Fmid_bins,Fprofiles,coordname):
+    """Calculate free energy barrier height"""
+    from scipy.interpolate import interp1d
+    dFdagg = [[] for i in range(len(parent_dirs)) ]
+    Finterp = [[] for i in range(len(parent_dirs)) ]
+    for i in range(len(parent_dirs)):
+        for j in range(len(sub_dirs)):
+            Fvsx = Fprofiles[i][j]
+            mid_bin = Fmid_bins[i][j]
+
+            F = interp1d(mid_bin,Fvsx,kind="cubic")
+            Finterp.append(F)
+
+            # Determine minima locations
+            dFdx = np.array([ (Fvsx[x + 1] - Fvsx[x])/(mid_bin[x + 1] - mid_bin[x]) for x in range(len(Fvsx) - 1) ])
+            minidx = np.where([(dFdx[x] < 0) & (dFdx[x + 1] > 0) for x in range(len(dFdx) - 1) ])[0] + 1
+            maxidx = np.where([(dFdx[x] > 0) & (dFdx[x + 1] < 0) for x in range(len(dFdx) - 1) ])[0] + 1
+            dFdagg[i].append(Fvsx[maxidx[0]] - Fvsx[minidx[0]])
+
+        np.savetxt("%s/%s/%s_dFdagg.dat" % (myroot,parent_dirs[i],coordname),np.array(dFdagg[i]))
+    return dFdagg, Finterp
