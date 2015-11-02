@@ -1,6 +1,7 @@
 import os
 import numpy as np
 
+<<<<<<< HEAD
 
 def plotpmf1D(xvst,xlabel="",ylabel="Free energy (k$_B$T)",bins=50,saveas=None,display=True,label=""):
     """Plot 1D pmf"""
@@ -33,6 +34,8 @@ def plotpmf2D(xvst,yvst,xlabel="",ylabel="",bins=50,saveas=None,display=True):
         plt.savefig(saveas) 
     if display:
         plt.show()
+=======
+>>>>>>> 48496d476ddfde8eb541fa28f6484b836b84bc29
 
 def pmf1D(xvst,bins=50):
     """Histogram timeseries to get 1D pmf"""
