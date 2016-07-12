@@ -34,8 +34,8 @@ def get_timeseries_by_temperature(temps_file,coord_file):
     coordlist = []
     Tlist = []
     for i in range(len(temps)):
-        T = temps[i].split("_")[0]
-        num = temps[i].split("_")[1]
+        T = temps[i].split("_")[-2]
+        num = temps[i].split("_")[-1]
         if T not in uniq_Tlist:
             uniq_Tlist.append(T)
             coordtemp = np.loadtxt("%s/%s" % (temps[i],coord_file))
