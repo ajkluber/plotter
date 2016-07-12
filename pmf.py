@@ -51,7 +51,10 @@ if __name__ == "__main__":
     title = args.title
     saveas = args.saveas
 
-    coord = np.loadtxt(filename)
+    if filename.endswith("npy"):
+        coord = np.load(filename)
+    else:
+        coord = np.loadtxt(filename)
     if filename == "Q.dat":
         coord += np.random.normal(size=coord.shape[0])
 

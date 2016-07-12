@@ -1,42 +1,6 @@
 import os
 import numpy as np
 
-<<<<<<< HEAD
-
-def plotpmf1D(xvst,xlabel="",ylabel="Free energy (k$_B$T)",bins=50,saveas=None,display=True,label=""):
-    """Plot 1D pmf"""
-    if not display:
-        import matplotlib
-        matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    mid_bin,Fdata = pmf1D(xvst,bins=bins) 
-    plt.plot(mid_bin,Fdata,lw=2,label=label)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    if saveas is not None:
-        plt.savefig(saveas) 
-    if display:
-        plt.show()
-
-def plotpmf2D(xvst,yvst,xlabel="",ylabel="",bins=50,saveas=None,display=True):
-    """Plot 1D pmf"""
-    if not display:
-        import matplotlib
-        matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    xedges,yedges,Fdata = pmf2D(xvst,yvst,bins=bins) 
-    plt.pcolormesh(xedges,yedges,Fdata)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    cbar = plt.colorbar()
-    cbar.set_label("Free Energy (k$_B$T)")
-    if saveas is not None:
-        plt.savefig(saveas) 
-    if display:
-        plt.show()
-=======
->>>>>>> 48496d476ddfde8eb541fa28f6484b836b84bc29
-
 def pmf1D(xvst,bins=50):
     """Histogram timeseries to get 1D pmf"""
     n,bins = np.histogram(xvst,bins=bins)
