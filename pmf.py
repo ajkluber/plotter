@@ -56,10 +56,10 @@ if __name__ == "__main__":
         coord += np.random.normal(size=coord.shape[0])
 
     mid_bin, Fdata = pmfutil.pmf1D(coord,bins=n_bins)
-    xinterp, F = pmfutil.interpolate_profile(mid_bin,Fdata)
+    #xinterp, F = pmfutil.interpolate_profile(mid_bin,Fdata)
 
     # Plot profile from data and interpolant 
-    plt.plot(xinterp,F(xinterp),lw=2,color='b',label="data")
+    #plt.plot(xinterp,F(xinterp),lw=2,color='b',label="data")
     plt.plot(mid_bin,Fdata,marker='o',color='b',label="fit")
     plt.legend()
     plt.xlabel("%s" % coord_name,fontsize=16)
