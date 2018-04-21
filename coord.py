@@ -15,7 +15,11 @@ if __name__ == "__main__":
     coord = filename.split(".")[0]
     stride = args.stride
 
-    Q = np.loadtxt(filename)
+    if filename.endswith(".npy"):
+        Q = np.load(filename)
+    else:
+        Q = np.loadtxt(filename)
+
     plt.plot(Q[::stride])
     plt.xlabel("frames",fontsize=20)
     plt.ylabel("%s" % coord,fontsize=20)
