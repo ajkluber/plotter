@@ -36,18 +36,20 @@ def get_timeseries_by_temperature(temps_file,coord_file):
     for i in range(len(temps)):
         T = temps[i].split("_")[-2]
         num = temps[i].split("_")[-1]
+        if coord_file.endswith(".npy"):
+            coordtemp = np.load("%s/%s" % (temps[i],coord_file))
+        else:
+            coordtemp = np.loadtxt("%s/%s" % (temps[i],coord_file))
+
+        if coord_name == "Q":
+            coordtemp += np.random.normal(size=len(coordtemp))
+
         if T not in uniq_Tlist:
             uniq_Tlist.append(T)
-            coordtemp = np.loadtxt("%s/%s" % (temps[i],coord_file))
-            if coord_name == "Q":
-                coordtemp += np.random.normal(size=len(coordtemp))
             coordlist.append(coordtemp)
             Tlist.append([temps[i]])
         else:
             idx = uniq_Tlist.index(T)
-            coordtemp = np.loadtxt("%s/%s" % (temps[i],coord_file))
-            if coord_name == "Q":
-                coordtemp += np.random.normal(size=len(coordtemp))
             coordlist[idx] = np.concatenate((coordlist[idx],coordtemp))
             Tlist[idx].append(temps[i])
     return uniq_Tlist, Tlist, coordlist
@@ -95,7 +97,7 @@ if __name__ == "__main__":
         xinterp, F = pmfutil.interpolate_profile(mid_bin,Fdata)
         minidx, maxidx = pmfutil.extrema_from_profile(xinterp,F)
         min_bounds, max_bounds = pmfutil.state_bounds_from_profile(xinterp,F)
-        min_labels, max_labels = pmfutil.assign_state_labels(min_bounds,max_bounds)
+        min_labels, max_labels = pmfutil.assign_state_labels(min_bounds, max_bounds)
         pmfutil.save_state_bounds(T,min_bounds,max_bounds,min_labels,max_labels)
 
         dF_N_U = F(xinterp[minidx[-1]]) - F(xinterp[minidx[0]]) 
