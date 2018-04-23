@@ -110,7 +110,7 @@ def find_U_TS_N(mid_bin,Fvsx):
     minidx = np.where([(dFdx[x] < 0) & (dFdx[x + 1] >= 0) for x in range(len(dFdx) - 1) ])[0] + 1
     maxidx = np.where([(dFdx[x] > 0) & (dFdx[x + 1] <= 0) for x in range(len(dFdx) - 1) ])[0] + 1
 
-    # Keep   
+    # ignore data at ends 
     xmin = (xinterp[10:-10])[minidx]
     xmax = (xinterp[10:-10])[maxidx]
     if len(xmin) > 2:

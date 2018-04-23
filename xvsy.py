@@ -3,12 +3,12 @@ import numpy as np
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='.')
-    parser.add_argument('xdata', type=str, help='Filename of X data.')
     parser.add_argument('ydata', type=str, help='Filename of Y data.')
     parser.add_argument('xlabel', type=str, help='X axis label.')
     parser.add_argument('ylabel', type=str, help='Y axis label.')
     parser.add_argument('title', type=str, help='Title.')
     parser.add_argument('saveas', type=str, default=None, help='Name to save plot.')
+    parser.add_argument('--xdata', type=str, default="None", help='Filename of X data.')
     parser.add_argument('--nodisplay', action='store_true', help='Optional. Dont display to screen.')
     args = parser.parse_args()
 
@@ -27,15 +27,19 @@ if __name__ == "__main__":
     else:
         import matplotlib.pyplot as plt
 
-    if xdata.endswith(".npy"):
-        x = np.load(xdata)
-    else:
-        x = np.loadtxt(xdata)
-
+    
     if ydata.endswith(".npy"):
         y = np.load(ydata)
     else:
         y = np.loadtxt(ydata)
+
+    if xdata.endswith(".npy"):
+        x = np.load(xdata)
+    elif xdata == "None":
+        x = np.arange(len(y))
+    else:
+        x = np.loadtxt(xdata)
+
 
     plt.plot(x, y)
     plt.xlabel(xlabel,fontsize=20)
